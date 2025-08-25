@@ -117,9 +117,10 @@ Options:
   -a, --all             Show all ports (including non-localhost)  
   -p, --port <PORT>     Check specific port
   -d, --detailed        Show detailed output with full paths and commands
-  -c, --compact         Show compact table format with solid lines
+  -c, --compact         Show narrow format for small terminals
   -f, --filter <TEXT>   Filter results by text (include)
   -x, --exclude <TEXT>  Exclude results containing text
+  -n, --limit <COUNT>   Limit the number of results displayed
   -h, --help            Print help
   -V, --version         Print version
 ```
@@ -136,6 +137,12 @@ ports-tool -p 3000 -d
 
 # Clean view without editor processes
 ports-tool -c -x code -x chrome
+
+# Show only the first 5 open ports
+ports-tool -n 5
+
+# Get top 3 node processes
+ports-tool -f node -n 3
 ```
 
 ### Output Formats

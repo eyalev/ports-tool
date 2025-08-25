@@ -86,6 +86,13 @@ fn main() -> Result<()> {
                 .help("Exclude results containing text (searches in process name, command, and working directory)")
                 .value_name("TEXT"),
         )
+        .arg(
+            Arg::new("limit")
+                .short('n')
+                .long("limit")
+                .help("Limit the number of results displayed")
+                .value_name("COUNT"),
+        )
         .get_matches();
 
     let localhost_only = matches.get_flag("localhost") || !matches.get_flag("all");
@@ -96,6 +103,9 @@ fn main() -> Result<()> {
     let compact = matches.get_flag("compact");
     let filter_text = matches.get_one::<String>("filter");
     let exclude_text = matches.get_one::<String>("exclude");
+    let limit: Option<usize> = matches
+        .get_one::<String>("limit")
+        .and_then(|l| l.parse().ok());
 
     let mut ports = get_open_ports(localhost_only, specific_port)?;
     
@@ -107,6 +117,11 @@ fn main() -> Result<()> {
     // Apply exclude filter if specified
     if let Some(exclude) = exclude_text {
         ports = exclude_ports(ports, exclude);
+    }
+    
+    // Apply limit if specified
+    if let Some(limit_count) = limit {
+        ports.truncate(limit_count);
     }
     
     display_ports(&ports, detailed, compact)?;
