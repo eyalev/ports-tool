@@ -18,6 +18,19 @@ A Rust CLI tool to display open ports with detailed process information.
 
 ## Installation
 
+### Quick Install (One Command)
+```bash
+curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash
+```
+
+### Manual Install from GitHub
+```bash
+# Download and install latest release
+curl -L https://github.com/eyalev/ports-tool/releases/latest/download/ports-tool -o ports-tool
+chmod +x ports-tool
+sudo mv ports-tool /usr/local/bin/
+```
+
 ### From Source
 ```bash
 git clone https://github.com/eyalev/ports-tool.git
