@@ -69,7 +69,7 @@ fn main() -> Result<()> {
             Arg::new("compact")
                 .short('c')
                 .long("compact")
-                .help("Show compact table format")
+                .help("Show narrow format for small terminals")
                 .action(clap::ArgAction::SetTrue),
         )
         .arg(
@@ -335,9 +335,9 @@ fn display_ports(ports: &[PortInfo], detailed: bool, compact: bool) -> Result<()
     if detailed {
         display_detailed_format(ports)
     } else if compact {
-        display_compact_table(ports)
+        display_narrow_format(ports)
     } else {
-        display_standard_table(ports)
+        display_compact_table(ports) // Make compact the default
     }
 }
 
@@ -365,7 +365,7 @@ fn display_compact_table(ports: &[PortInfo]) -> Result<()> {
     Ok(())
 }
 
-fn display_standard_table(ports: &[PortInfo]) -> Result<()> {
+fn display_narrow_format(ports: &[PortInfo]) -> Result<()> {
     if ports.is_empty() {
         println!("No open ports found.");
         return Ok(());
@@ -394,7 +394,7 @@ fn display_standard_table(ports: &[PortInfo]) -> Result<()> {
     }
     
     println!();
-    println!("Use -c for compact table, -d for detailed view, -h for help");
+    println!("Use default for table view, -d for detailed view, -h for help");
     Ok(())
 }
 
