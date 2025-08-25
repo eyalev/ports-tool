@@ -380,9 +380,9 @@ fn display_compact_table(ports: &[PortInfo]) -> Result<()> {
             protocol: port.protocol.clone(),
             state: port.state.clone(),
             pid: port.pid.clone(),
-            process_name: truncate_string(&port.process_name, 15),
-            command: truncate_string(&port.command, 50),
-            working_dir: truncate_string(&port.working_dir, 40),
+            process_name: truncate_string(&port.process_name, 12),
+            command: truncate_string(&port.command, 30),
+            working_dir: truncate_string(&port.working_dir, 25),
         }
     }).collect();
     
