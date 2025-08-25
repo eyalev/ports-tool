@@ -54,14 +54,26 @@ cp target/release/ports-tool ~/.local/bin/  # User install
 sudo cp target/release/ports-tool /usr/local/bin/  # System install
 ```
 
-### Uninstall
-```bash
-# Uninstall from ~/.local/bin
-curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash -s uninstall
+## Uninstall
 
-# Or remove manually
-rm ~/.local/bin/ports-tool
+### Quick Uninstall
+```bash
+curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash -s uninstall
 ```
+
+### Manual Uninstall
+```bash
+# Remove from user installation
+rm ~/.local/bin/ports-tool
+
+# Remove from system installation (if installed with sudo)
+sudo rm /usr/local/bin/ports-tool
+```
+
+The uninstall script will:
+- ✅ Remove `ports-tool` from `~/.local/bin`
+- 🔍 Check for system-wide installations and provide removal instructions
+- 🧹 Clean removal with confirmation
 
 ## Usage
 
@@ -92,6 +104,9 @@ ports-tool -a
 
 # Combine options for powerful filtering
 ports-tool -c -f node -x chrome
+
+# Uninstall ports-tool
+curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash -s uninstall
 ```
 
 ## Command Line Options
