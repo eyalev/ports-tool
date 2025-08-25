@@ -366,19 +366,35 @@ fn display_compact_table(ports: &[PortInfo]) -> Result<()> {
 }
 
 fn display_standard_table(ports: &[PortInfo]) -> Result<()> {
-    let ports_truncated: Vec<PortInfo> = ports.iter().map(|p| PortInfo {
-        port: p.port,
-        protocol: p.protocol.clone(),
-        state: p.state.clone(),
-        pid: p.pid.clone(),
-        process_name: p.process_name.clone(),
-        command: truncate_string(&p.command, 30),
-        working_dir: truncate_string(&p.working_dir, 30),
-    }).collect();
+    if ports.is_empty() {
+        println!("No open ports found.");
+        return Ok(());
+    }
 
-    let mut table = Table::new(&ports_truncated);
-    table.with(Style::ascii());
-    println!("{}", table);
+    // Simple format optimized for narrow terminals
+    println!("{:<6} {:<8} {:<8} {:<8} {:<12}", "PORT", "PROTO", "STATE", "PID", "PROCESS");
+    println!("{}", "-".repeat(50));
+
+    for port in ports {
+        let pid_str = if port.pid == "-" { "-".to_string() } else { port.pid.clone() };
+        let process = if port.process_name == "-" { "-".to_string() } else { truncate_string(&port.process_name, 12) };
+        
+        println!("{:<6} {:<8} {:<8} {:<8} {:<12}", 
+                port.port, 
+                port.protocol, 
+                port.state,
+                pid_str,
+                process);
+        
+        // Show command on next line if it's meaningful
+        if port.command != "-" && !port.command.is_empty() {
+            let cmd = truncate_string(&port.command, 70);
+            println!("       └─ {}", cmd);
+        }
+    }
+    
+    println!();
+    println!("Use -c for compact table, -d for detailed view, -h for help");
     Ok(())
 }
 
