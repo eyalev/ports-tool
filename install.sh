@@ -59,11 +59,65 @@ install_ports_tool() {
     # Check if ~/.local/bin is in PATH
     if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
         echo "⚠️  $INSTALL_DIR is not in your PATH"
-        echo "Add this to your ~/.bashrc or ~/.zshrc:"
+        echo ""
+        
+        # Detect user's shell
+        CURRENT_SHELL=$(basename "$SHELL")
+        case "$CURRENT_SHELL" in
+            "bash")
+                SHELL_RC="~/.bashrc"
+                SOURCE_CMD="source ~/.bashrc"
+                ;;
+            "zsh")
+                SHELL_RC="~/.zshrc"
+                SOURCE_CMD="source ~/.zshrc"
+                ;;
+            "fish")
+                echo "For Fish shell, add this to your ~/.config/fish/config.fish:"
+                echo "  set -gx PATH \$PATH $INSTALL_DIR"
+                echo ""
+                echo "Or run: echo 'set -gx PATH \$PATH $INSTALL_DIR' >> ~/.config/fish/config.fish"
+                echo "Then restart your terminal or run: source ~/.config/fish/config.fish"
+                echo ""
+                return
+                ;;
+            *)
+                echo "Detected shell: $CURRENT_SHELL"
+                echo "Add this line to your shell's configuration file:"
+                echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
+                echo ""
+                echo "Common locations:"
+                echo "  ~/.bashrc (bash)"
+                echo "  ~/.zshrc (zsh)"
+                echo "  ~/.profile (generic)"
+                echo ""
+                return
+                ;;
+        esac
+        
+        echo "Detected shell: $CURRENT_SHELL"
+        echo "Add $INSTALL_DIR to your PATH by running:"
+        echo ""
+        echo "  echo 'export PATH=\"\$PATH:$INSTALL_DIR\"' >> $SHELL_RC"
+        echo "  $SOURCE_CMD"
+        echo ""
+        echo "Or add this line manually to $SHELL_RC:"
         echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
         echo ""
-        echo "Or run: echo 'export PATH=\"\$PATH:$INSTALL_DIR\"' >> ~/.bashrc"
-        echo "Then restart your terminal or run: source ~/.bashrc"
+        
+        # Offer to add it automatically
+        echo "Would you like to add it automatically? (y/N)"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            if [[ "$CURRENT_SHELL" == "bash" ]]; then
+                echo 'export PATH="$PATH:'"$INSTALL_DIR"'"' >> ~/.bashrc
+                echo "✅ Added to ~/.bashrc"
+            elif [[ "$CURRENT_SHELL" == "zsh" ]]; then
+                echo 'export PATH="$PATH:'"$INSTALL_DIR"'"' >> ~/.zshrc
+                echo "✅ Added to ~/.zshrc"
+            fi
+            echo "Please restart your terminal or run: $SOURCE_CMD"
+        fi
         echo ""
     fi
 

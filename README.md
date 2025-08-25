@@ -22,7 +22,7 @@ A Rust CLI tool to display open ports with detailed process information.
 ```bash
 curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash
 ```
-*Installs to `~/.local/bin` - may need to add to PATH*
+*Installs to `~/.local/bin` with automatic shell detection and PATH setup*
 
 ### Manual Install from GitHub
 ```bash
