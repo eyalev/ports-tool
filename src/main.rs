@@ -79,6 +79,13 @@ fn main() -> Result<()> {
                 .help("Filter results by text (searches in process name, command, and working directory)")
                 .value_name("TEXT"),
         )
+        .arg(
+            Arg::new("exclude")
+                .short('x')
+                .long("exclude")
+                .help("Exclude results containing text (searches in process name, command, and working directory)")
+                .value_name("TEXT"),
+        )
         .get_matches();
 
     let localhost_only = matches.get_flag("localhost") || !matches.get_flag("all");
@@ -88,12 +95,18 @@ fn main() -> Result<()> {
     let detailed = matches.get_flag("detailed");
     let compact = matches.get_flag("compact");
     let filter_text = matches.get_one::<String>("filter");
+    let exclude_text = matches.get_one::<String>("exclude");
 
     let mut ports = get_open_ports(localhost_only, specific_port)?;
     
-    // Apply filter if specified
+    // Apply include filter if specified
     if let Some(filter) = filter_text {
         ports = filter_ports(ports, filter);
+    }
+    
+    // Apply exclude filter if specified
+    if let Some(exclude) = exclude_text {
+        ports = exclude_ports(ports, exclude);
     }
     
     display_ports(&ports, detailed, compact)?;
@@ -301,6 +314,15 @@ fn filter_ports(ports: Vec<PortInfo>, filter_text: &str) -> Vec<PortInfo> {
         port.process_name.to_lowercase().contains(&filter_lower) ||
         port.command.to_lowercase().contains(&filter_lower) ||
         port.working_dir.to_lowercase().contains(&filter_lower)
+    }).collect()
+}
+
+fn exclude_ports(ports: Vec<PortInfo>, exclude_text: &str) -> Vec<PortInfo> {
+    let exclude_lower = exclude_text.to_lowercase();
+    ports.into_iter().filter(|port| {
+        !port.process_name.to_lowercase().contains(&exclude_lower) &&
+        !port.command.to_lowercase().contains(&exclude_lower) &&
+        !port.working_dir.to_lowercase().contains(&exclude_lower)
     }).collect()
 }
 
