@@ -4,7 +4,7 @@ use std::fs;
 use anyhow::Result;
 use clap::{Arg, Command as ClapCommand};
 use serde::{Deserialize, Serialize};
-use tabled::{Table, Tabled, settings::Style};
+use tabled::{Table, Tabled, settings::{Style, Width, object::Columns}};
 
 #[derive(Debug, Serialize, Deserialize, Tabled)]
 struct PortInfo {
@@ -336,18 +336,9 @@ fn display_detailed_format(ports: &[PortInfo]) -> Result<()> {
 }
 
 fn display_compact_table(ports: &[PortInfo]) -> Result<()> {
-    let ports_truncated: Vec<PortInfo> = ports.iter().map(|p| PortInfo {
-        port: p.port,
-        protocol: p.protocol.clone(),
-        state: p.state.clone(),
-        pid: p.pid.clone(),
-        process_name: p.process_name.clone(),
-        command: truncate_string(&p.command, 30),
-        working_dir: truncate_string(&p.working_dir, 30),
-    }).collect();
-
-    let mut table = Table::new(&ports_truncated);
+    let mut table = Table::new(ports);
     table.with(Style::modern());
+    table.modify(Columns::new(5..), Width::wrap(50).keep_words(true));
     println!("{}", table);
     Ok(())
 }
