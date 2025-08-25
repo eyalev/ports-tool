@@ -18,14 +18,27 @@ A Rust CLI tool to display open ports with detailed process information.
 
 ## Installation
 
-### Quick Install (One Command)
+### Quick Install (One Command - No sudo required)
 ```bash
 curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash
 ```
+*Installs to `~/.local/bin` - may need to add to PATH*
 
 ### Manual Install from GitHub
 ```bash
-# Download and install latest release
+# Download and install latest release to ~/.local/bin
+mkdir -p ~/.local/bin
+curl -L https://github.com/eyalev/ports-tool/releases/latest/download/ports-tool -o ~/.local/bin/ports-tool
+chmod +x ~/.local/bin/ports-tool
+
+# Add to PATH if needed
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+### System-wide Install (requires sudo)
+```bash
+# Download and install system-wide
 curl -L https://github.com/eyalev/ports-tool/releases/latest/download/ports-tool -o ports-tool
 chmod +x ports-tool
 sudo mv ports-tool /usr/local/bin/
@@ -36,7 +49,18 @@ sudo mv ports-tool /usr/local/bin/
 git clone https://github.com/eyalev/ports-tool.git
 cd ports-tool
 cargo build --release
-sudo cp target/release/ports-tool /usr/local/bin/
+cp target/release/ports-tool ~/.local/bin/  # User install
+# OR
+sudo cp target/release/ports-tool /usr/local/bin/  # System install
+```
+
+### Uninstall
+```bash
+# Uninstall from ~/.local/bin
+curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh | bash -s uninstall
+
+# Or remove manually
+rm ~/.local/bin/ports-tool
 ```
 
 ## Usage
