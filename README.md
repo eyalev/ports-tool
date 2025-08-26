@@ -78,7 +78,7 @@ The uninstall script will:
 ## Usage
 
 ```bash
-# Show localhost ports (default)
+# Show all open ports (default)
 ports-tool
 
 # Compact format with solid lines and text wrapping
@@ -99,8 +99,8 @@ ports-tool -f personal -x chrome
 # Check specific port
 ports-tool -p 8080
 
-# Show all ports (not just localhost)
-ports-tool -a
+# Show only localhost ports  
+ports-tool -l
 
 # Combine options for powerful filtering
 ports-tool -c -f node -x chrome
@@ -113,7 +113,7 @@ curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh 
 
 ```
 Options:
-  -a, --all             Show all ports (including non-localhost, default shows localhost only)  
+  -l, --localhost       Show only localhost ports  
   -p, --port <PORT>     Check specific port
   -d, --detailed        Show detailed output with full paths and commands
   -c, --compact         Show narrow format for small terminals
