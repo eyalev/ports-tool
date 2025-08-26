@@ -38,13 +38,6 @@ fn main() -> Result<()> {
         .author("Port Scanner Tool")
         .about("Shows open ports with process information")
         .arg(
-            Arg::new("localhost")
-                .short('l')
-                .long("localhost")
-                .help("Show only localhost ports")
-                .action(clap::ArgAction::SetTrue),
-        )
-        .arg(
             Arg::new("all")
                 .short('a')
                 .long("all")
@@ -95,7 +88,7 @@ fn main() -> Result<()> {
         )
         .get_matches();
 
-    let localhost_only = matches.get_flag("localhost") || !matches.get_flag("all");
+    let localhost_only = !matches.get_flag("all");
     let specific_port: Option<u16> = matches
         .get_one::<String>("port")
         .and_then(|p| p.parse().ok());

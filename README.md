@@ -78,7 +78,7 @@ The uninstall script will:
 ## Usage
 
 ```bash
-# Show all localhost ports (default)
+# Show localhost ports (default)
 ports-tool
 
 # Compact format with solid lines and text wrapping
@@ -113,8 +113,7 @@ curl -sSL https://raw.githubusercontent.com/eyalev/ports-tool/master/install.sh 
 
 ```
 Options:
-  -l, --localhost       Show only localhost ports (default)
-  -a, --all             Show all ports (including non-localhost)  
+  -a, --all             Show all ports (including non-localhost, default shows localhost only)  
   -p, --port <PORT>     Check specific port
   -d, --detailed        Show detailed output with full paths and commands
   -c, --compact         Show narrow format for small terminals
