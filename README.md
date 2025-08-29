@@ -120,6 +120,7 @@ Options:
   -f, --filter <TEXT>   Filter results by text (include)
   -x, --exclude <TEXT>  Exclude results containing text
   -n, --limit <COUNT>   Limit the number of results displayed
+  -k, --kill            Kill processes running on specified port(s)
   -h, --help            Print help
   -V, --version         Print version
 ```
@@ -142,6 +143,13 @@ ports-tool -n 5
 
 # Get top 3 node processes
 ports-tool -f node -n 3
+
+# Kill process running on port 8080 (with confirmation)
+ports-tool -p 8080 --kill
+
+# Check what's on a port before killing
+ports-tool -p 3000 -d
+ports-tool -p 3000 -k
 ```
 
 ### Output Formats
@@ -173,6 +181,32 @@ PID: 1234
 Process: node
 Command: node /home/user/my-project/server.js --port 3000 --dev
 Working Dir: /home/user/my-project
+```
+
+## Kill Functionality
+
+The `--kill` option allows you to terminate processes running on specific ports:
+
+```bash
+# Kill processes on port 8080
+ports-tool -p 8080 --kill
+```
+
+**Safety Features:**
+- ✅ **Requires specific port**: Must use `-p PORT` with `--kill`
+- ✅ **Interactive confirmation**: Shows process details and asks for confirmation
+- ✅ **Clear feedback**: Reports success/failure for each kill attempt
+- ✅ **Permission handling**: Suggests using `sudo` for system processes
+
+**Example Output:**
+```
+Found 1 process(es) running on the specified port:
+  PID: 12345 | Process: node | Command: node server.js
+  
+Are you sure you want to kill these processes? (y/N): y
+✓ Killed process 12345 (node)
+
+Summary: 1 killed, 0 failed
 ```
 
 ## How It Works

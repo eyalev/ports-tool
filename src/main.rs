@@ -86,6 +86,13 @@ fn main() -> Result<()> {
                 .help("Limit the number of results displayed")
                 .value_name("COUNT"),
         )
+        .arg(
+            Arg::new("kill")
+                .short('k')
+                .long("kill")
+                .help("Kill processes running on specified port(s)")
+                .action(clap::ArgAction::SetTrue),
+        )
         .get_matches();
 
     let localhost_only = matches.get_flag("localhost");
@@ -99,6 +106,7 @@ fn main() -> Result<()> {
     let limit: Option<usize> = matches
         .get_one::<String>("limit")
         .and_then(|l| l.parse().ok());
+    let kill_processes = matches.get_flag("kill");
 
     let mut ports = get_open_ports(localhost_only, specific_port)?;
     
@@ -115,6 +123,22 @@ fn main() -> Result<()> {
     // Apply limit if specified
     if let Some(limit_count) = limit {
         ports.truncate(limit_count);
+    }
+    
+    // Handle kill functionality
+    if kill_processes {
+        if specific_port.is_none() {
+            eprintln!("Error: --kill option requires a specific port (-p PORT)");
+            std::process::exit(1);
+        }
+        
+        if ports.is_empty() {
+            println!("No processes found running on port {}", specific_port.unwrap());
+            return Ok(());
+        }
+        
+        kill_port_processes(&ports)?;
+        return Ok(());
     }
     
     display_ports(&ports, detailed, compact)?;
@@ -424,6 +448,65 @@ fn truncate_string(s: &str, max_len: usize) -> String {
     } else {
         format!("{}...", &s[..max_len.saturating_sub(3)])
     }
+}
+
+fn kill_port_processes(ports: &[PortInfo]) -> Result<()> {
+    use std::io::{self, Write};
+    use std::process::Command;
+    
+    println!("Found {} process(es) running on the specified port:", ports.len());
+    for port in ports {
+        if port.pid != "-" {
+            println!("  PID: {} | Process: {} | Command: {}", 
+                port.pid, port.process_name, port.command);
+        }
+    }
+    println!();
+    
+    print!("Are you sure you want to kill these processes? (y/N): ");
+    io::stdout().flush()?;
+    
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    
+    if !input.trim().to_lowercase().starts_with('y') {
+        println!("Aborted.");
+        return Ok(());
+    }
+    
+    let mut killed_count = 0;
+    let mut failed_count = 0;
+    
+    for port in ports {
+        if port.pid != "-" {
+            if let Ok(pid) = port.pid.parse::<i32>() {
+                match Command::new("kill").arg(pid.to_string()).output() {
+                    Ok(output) => {
+                        if output.status.success() {
+                            println!("✓ Killed process {} ({})", pid, port.process_name);
+                            killed_count += 1;
+                        } else {
+                            println!("✗ Failed to kill process {} ({})", pid, port.process_name);
+                            failed_count += 1;
+                        }
+                    }
+                    Err(e) => {
+                        println!("✗ Error killing process {} ({}): {}", pid, port.process_name, e);
+                        failed_count += 1;
+                    }
+                }
+            }
+        }
+    }
+    
+    println!();
+    println!("Summary: {} killed, {} failed", killed_count, failed_count);
+    
+    if failed_count > 0 {
+        println!("Note: You may need to run with sudo for system processes");
+    }
+    
+    Ok(())
 }
 
 impl Clone for ProcessInfo {
