@@ -40,7 +40,8 @@ jobs:
     
     - name: Rename artifacts for release
       run: |
-        mv ports-tool-linux-x86_64/ports-tool ports-tool-linux-x86_64
+        # Move the binary out of the artifact folder
+        mv ports-tool-linux-x86_64/ports-tool ./ports-tool-linux-x86_64
         # Create a generic binary as 'ports-tool' for easy installation
         cp ports-tool-linux-x86_64 ports-tool
     
