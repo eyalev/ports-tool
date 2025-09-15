@@ -40,8 +40,11 @@ jobs:
     
     - name: Prepare release assets
       run: |
-        # Copy the binary out of the artifact folder with a descriptive name
-        cp ports-tool-linux-x86_64/ports-tool ./ports-tool-linux-x86_64
+        # Debug: list directory structure
+        ls -la
+        ls -la ports-tool-linux-x86_64/
+        # Copy the binary with a descriptive name
+        cp ports-tool-linux-x86_64/ports-tool ./ports-tool-linux
         # Create a generic binary as 'ports-tool' for easy installation
         cp ports-tool-linux-x86_64/ports-tool ./ports-tool
     
@@ -49,7 +52,7 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: |
-          ports-tool-linux-x86_64
+          ports-tool-linux
           ports-tool
         generate_release_notes: true
         draft: false
