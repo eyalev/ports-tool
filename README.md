@@ -5,6 +5,7 @@ A Rust CLI tool to display open ports with detailed process information.
 ## Features
 
 - 🔍 **Comprehensive Port Information**: Shows TCP/UDP ports with PID, process name, full command, and working directory
+- 🌐 **IPv4 and IPv6 Support**: Detects ports bound to both IPv4 and IPv6 protocols
 - 📋 **Multiple Display Formats**: 
   - Standard (default): Clean table with truncated text
   - Compact (`-c`): Solid Unicode borders with text wrapping
@@ -13,8 +14,9 @@ A Rust CLI tool to display open ports with detailed process information.
   - Include filter (`-f`): Show only entries containing specified text
   - Exclude filter (`-x`): Hide entries containing specified text
   - Combine both for precise control
-- 🏠 **Localhost Focus**: Default localhost-only view with option to show all ports
+- 🏠 **Localhost Focus**: Default localhost-only view with option to show all ports (supports both 127.0.0.1 and ::1)
 - 🎯 **Specific Port Lookup**: Target individual ports for detailed inspection
+- ⚡ **Process Termination**: Kill processes running on specific ports with safety confirmations
 
 ## Installation
 
@@ -211,7 +213,11 @@ Summary: 1 killed, 0 failed
 
 ## How It Works
 
-`ports-tool` reads from `/proc/net/tcp` and `/proc/net/udp` to discover open ports, then matches socket inodes to processes in `/proc/*/fd/` to gather detailed process information including:
+`ports-tool` reads from multiple `/proc` filesystem sources to discover all open ports:
+- `/proc/net/tcp` and `/proc/net/tcp6` for TCP connections (IPv4 and IPv6)
+- `/proc/net/udp` and `/proc/net/udp6` for UDP connections (IPv4 and IPv6)
+
+Then matches socket inodes to processes in `/proc/*/fd/` to gather detailed process information including:
 
 - Process ID and name
 - Complete command line with arguments

@@ -168,8 +168,115 @@ fn get_open_ports(localhost_only: bool, specific_port: Option<u16>) -> Result<Ve
         }
     }
 
+    // Parse /proc/net/tcp6 for IPv6 TCP connections
+    if let Ok(tcp6_content) = fs::read_to_string("/proc/net/tcp6") {
+        for line in tcp6_content.lines().skip(1) {
+            if let Some(port_info) = parse_net6_line(line, "tcp", &process_map, localhost_only, specific_port)? {
+                ports.push(port_info);
+            }
+        }
+    }
+
+    // Parse /proc/net/udp6 for IPv6 UDP connections
+    if let Ok(udp6_content) = fs::read_to_string("/proc/net/udp6") {
+        for line in udp6_content.lines().skip(1) {
+            if let Some(port_info) = parse_net6_line(line, "udp", &process_map, localhost_only, specific_port)? {
+                ports.push(port_info);
+            }
+        }
+    }
+
     ports.sort_by_key(|p| p.port);
     Ok(ports)
+}
+
+fn parse_net6_line(
+    line: &str,
+    protocol: &str,
+    process_map: &HashMap<u32, ProcessInfo>,
+    localhost_only: bool,
+    specific_port: Option<u16>,
+) -> Result<Option<PortInfo>> {
+    let fields: Vec<&str> = line.split_whitespace().collect();
+    if fields.len() < 10 {
+        return Ok(None);
+    }
+
+    let local_address = fields[1];
+    let state = fields[3];
+
+    // Parse address:port
+    let addr_parts: Vec<&str> = local_address.split(':').collect();
+    if addr_parts.len() != 2 {
+        return Ok(None);
+    }
+
+    let port = u16::from_str_radix(addr_parts[1], 16).unwrap_or(0);
+    let addr_hex = addr_parts[0];
+
+    // IPv6 address is 32 hex characters (128 bits)
+    if addr_hex.len() != 32 {
+        return Ok(None);
+    }
+
+    // Check if it's IPv6 localhost (all zeros = ::, or ::1)
+    let is_localhost = addr_hex == "00000000000000000000000000000000" ||
+                      addr_hex == "00000000000000000000000001000000";
+
+    // Filter for localhost if requested
+    if localhost_only && !is_localhost {
+        return Ok(None);
+    }
+
+    // Filter for specific port if requested
+    if let Some(target_port) = specific_port {
+        if port != target_port {
+            return Ok(None);
+        }
+    }
+
+    // For TCP, only show listening ports (state 0A = LISTEN)
+    let state_str = if protocol == "tcp" {
+        match state {
+            "0A" => "LISTEN",
+            "01" => "ESTABLISHED",
+            "02" => "SYN_SENT",
+            "03" => "SYN_RECV",
+            "04" => "FIN_WAIT1",
+            "05" => "FIN_WAIT2",
+            "06" => "TIME_WAIT",
+            "07" => "CLOSE",
+            "08" => "CLOSE_WAIT",
+            "09" => "LAST_ACK",
+            "0B" => "CLOSING",
+            _ => "UNKNOWN",
+        }
+    } else {
+        "OPEN"
+    };
+
+    // For TCP, we mainly want listening ports
+    if protocol == "tcp" && state != "0A" && specific_port.is_none() {
+        return Ok(None);
+    }
+
+    // Try to get the inode to find the process
+    let inode: u32 = fields.get(9).unwrap_or(&"0").parse().unwrap_or(0);
+    let (pid, process_info) = if inode > 0 {
+        find_process_by_inode(inode, process_map)?
+    } else {
+        (None, None)
+    };
+
+    Ok(Some(PortInfo {
+        port,
+        protocol: protocol.to_uppercase(),
+        state: state_str.to_string(),
+        pid: pid.map(|p| p.to_string()).unwrap_or_else(|| "-".to_string()),
+        process_name: process_info.as_ref().map(|p| p.name.clone()).unwrap_or_else(|| "-".to_string()),
+        command: process_info.as_ref().map(|p| p.command.clone()).unwrap_or_else(|| "-".to_string()),
+        working_dir: process_info.as_ref().map(|p| p.working_dir.clone()).unwrap_or_else(|| "-".to_string()),
+    }))
 }
 
 fn parse_net_line(
