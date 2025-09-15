@@ -40,9 +40,6 @@ jobs:
     
     - name: Prepare release assets
       run: |
-        # Debug: list directory structure
-        ls -la
-        ls -la ports-tool-linux-x86_64/
         # Copy the binary with a descriptive name
         cp ports-tool-linux-x86_64/ports-tool ./ports-tool-linux
         # Create a generic binary as 'ports-tool' for easy installation
