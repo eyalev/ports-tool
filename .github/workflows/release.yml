@@ -38,12 +38,12 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
     
-    - name: Rename artifacts for release
+    - name: Prepare release assets
       run: |
-        # Move the binary out of the artifact folder
-        mv ports-tool-linux-x86_64/ports-tool ./ports-tool-linux-x86_64
+        # Copy the binary out of the artifact folder with a descriptive name
+        cp ports-tool-linux-x86_64/ports-tool ./ports-tool-linux-x86_64
         # Create a generic binary as 'ports-tool' for easy installation
-        cp ports-tool-linux-x86_64 ports-tool
+        cp ports-tool-linux-x86_64/ports-tool ./ports-tool
     
     - name: Create Release
       uses: softprops/action-gh-release@v2
