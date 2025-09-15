@@ -471,13 +471,25 @@ fn display_ports(ports: &[PortInfo], detailed: bool, compact: bool) -> Result<()
         return Ok(());
     }
 
-    if detailed {
+    // Check if any ports have missing process info (suggesting sudo might be needed)
+    let has_unknown_processes = ports.iter().any(|p| p.pid == "-" || p.process_name == "-");
+
+    let result = if detailed {
         display_detailed_format(ports)
     } else if compact {
         display_narrow_format(ports)
     } else {
         display_compact_table(ports) // Make compact the default
+    };
+
+    // Show helpful sudo message if there are unknown processes
+    if has_unknown_processes {
+        println!();
+        println!("Note: Some process information could not be determined.");
+        println!("For complete information, try running with sudo: sudo `which ports-tool`");
     }
+
+    result
 }
 
 fn display_detailed_format(ports: &[PortInfo]) -> Result<()> {
